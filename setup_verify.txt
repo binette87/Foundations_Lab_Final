@@ -1,13 +1,16 @@
---- FELLOWSHIP LAB VERIFICATION REPORT ---
-Timestamp: Thu Feb 26 23:45:56 UTC 2026
-User: ubuntu
-Hostname: ubuntu
-------------------------------------------
-Git: NOT INSTALLED
-Python3: INSTALLED (Python 3.13.7)
-Network IP: 192.168.64.5
-Virtualization: DETECTED (qemu)
-Available Disk Space: 1.9G
-------------------------------------------
-AUDIT COMPLETE. STATUS LOGGED.
-------------------------------------------
+Starting System Audit...
+User: 
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host noprefixroute 
+       valid_lft forever preferred_lft forever
+2: enp0s1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 66:aa:02:0d:87:83 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.64.7/24 metric 100 brd 192.168.64.255 scope global dynamic enp0s1
+       valid_lft 1953sec preferred_lft 1953sec
+    inet6 fd0a:3406:bd7f:ed5f:64aa:2ff:fe0d:8783/64 scope global dynamic mngtmpaddr noprefixroute 
+       valid_lft 2591969sec preferred_lft 604769sec
+    inet6 fe80::64aa:2ff:fe0d:8783/64 scope link 
+       valid_lft forever preferred_lft forever
