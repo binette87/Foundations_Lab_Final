@@ -1,4 +1,10 @@
-Log Path: /var/log/syslog
+```text
+Final Intel: Viewed /etc/shadow.
+User binette87 hash found.
+Session 02 Power User status: ACHIEVED.
+
+
+ Log Path: /var/log/syslog
 Mission Path: /opt/alpha/mission.txt
 Mission Secret: MISSION SECURE: The system is yours. Do not fear the dark.
 Token Path: /var/tmp/.blackout/token.txt
