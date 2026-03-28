@@ -1,0 +1,32 @@
+TLAB W2: Operation Blackout
+1. Restored Gateway (ip route)
+
+default via 192.168.10.1 dev enp0s1
+192.168.10.0/24 dev enp0s1 scope link src 192.168.10.150
+
+2. Name Resolution for secure.titancorp.com
+
+Command:
+getent hosts secure.titancorp.com
+
+Output:
+192.168.10.193 secure.titancorp.com
+
+3. TCP Connection Attempt (curl -v -k https://secure.titancorp.com)
+
+Command:
+curl -v -k https://secure.titancorp.com
+
+Key output (summarized):
+* Host secure.titancorp.com:443 was resolved.
+*    Trying 192.168.10.193:443
+* connect to 192.168.10.193 port 443 from 192.168.10.150 port 48572 failed: no route to host
+* Failed to connect to secure.titancorp.com port 443: Couldn't connect to server
+
+4. Environment Note
+
+I remediated the subnet from /26 to /24, restored the default gateway (default via 192.168.10.1 dev enp0s1) and corrected 
+/etc/hosts so secure.titancorp.com resolves to 192.168.10.193. However, on my home/UTM network there us no real host at 
+192.168.10.193:443, so curl reports "No route to host" and tcpdump captures 0 packets. In the official lab environment,
+these same steps would produce tcpdump lines with [S], [S.], and [.] showing the TCP 3-way handshake.
+
