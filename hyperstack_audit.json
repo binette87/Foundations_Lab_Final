@@ -1,0 +1,8 @@
+{
+  "operator": "BF",
+  "host_ip": "192.168.64.7",
+  "vm_sandbox_ip": "192.168.64.7",
+  "web_container_id": "c5592d0d3fac",
+  "isolation_test": "PASSED",
+  "persistence_verified": true
+}

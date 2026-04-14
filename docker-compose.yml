@@ -1,28 +1,25 @@
 version: '3.8'
-
 services:
-  wordpress:
-    image: wordpress:latest
-    ports:
-      - "8080:80"
-    environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: root
-      WORDPRESS_DB_PASSWORD: supersecretpassword
-      WORDPRESS_DB_NAME: wordpress
-    networks:
-      - frontend
-      - backend
-
   db:
-    image: mysql:8.0
+    image: mariadb:latest
     environment:
       MYSQL_ROOT_PASSWORD: supersecretpassword
-      MYSQL_DATABASE: wordpress
+    volumes:
+      - db_data:/var/lib/mysql
     networks:
-      - backend
+      - private_net
+  web:
+    image: wordpress:latest
+    ports:
+      - "80:80"
+    networks:
+      - public_net
+      - private_net
+
+volumes:
+  db_data:
 
 networks:
-  frontend:
-  backend:
+  public_net:
+  private_net:
     internal: true
