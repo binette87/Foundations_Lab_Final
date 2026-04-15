@@ -1,0 +1,44 @@
+==================================================
+SESSION 16: READINESS INVENTORY
+==================================================
+Operator: Bineta Fall
+Date: April 15 2026
+
+Confidence Audit (Yes/No): Yes
+1. Nmap (Network Scanning): [X]
+
+Layer 3 (Network): RESOLVED
+  - ping 8.8.8.8 operational, 0% packet loss
+  - UFW status clean, no DENY OUT rules present
+
+2. Docker (Containerization): [X]
+
+Layer 4 (Transport): RESOLVED
+  - ghost_web container squatting on port 8080
+  - Fix: sudo docker rm -f ghost_web
+  - Verified: httpd launched successfully on 8080
+
+3. Linux Hardening (UFW/chmod): [X]
+
+Layer 7 (Application): RESOLVED
+  - broken_script.sh had ---------- permissions
+  - Fix: chmod 755 ~/forge_v1/broken_script.sh
+  - Verified: [+] Heartbeat Detected. System Secure.
+
+
+4. VS Code Remote-SSH: [X ]
+
+Identify your weakest area and your plan to review it:
+Weakest Area:
+Layer 3 troubleshooting (Phase 4 - UFW/ICMP). The ping anomaly 
+was not triggered on my system, so I did not get hands-on practice 
+identifying and deleting the DENY OUT icmp rule using 
+"sudo ufw delete [number]".
+
+Review Plan:
+I will manually practice by adding a test UFW deny rule with 
+"sudo ufw deny out proto icmp" then walking through the full 
+diagnosis and fix using "sudo ufw status numbered" and 
+"sudo ufw delete" to build muscle memory for Layer 3 
+firewall troubleshooting.
+==================================================
