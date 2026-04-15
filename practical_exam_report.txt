@@ -1,6 +1,6 @@
 ==================================================
 SESSION 17: PRACTICAL EXAM REPORT
-Operator: [Name Here]
+Operator: Bineta Fall
 ==================================================
 TASK 1 (FIND): What single command did you use to 
 find all .log files owned by root?
