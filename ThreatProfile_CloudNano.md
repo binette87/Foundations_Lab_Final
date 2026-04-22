@@ -8,7 +8,7 @@
 ## 2. Tech Stack Mapping 
 * **Tool Used:** BuiltWith/Wappalyzer
 * **Identified Technologies (CMS/CDN/Backend):** * Apache 
-  * Akamai * Wordpress
+  ** Akamai * Wordpress
 
 ## 3. Major Exposure Points & Dangers 
 *(List three major exposure points discovered during your OSINT audit and explain why they are dangerous)*
