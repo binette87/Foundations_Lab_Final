@@ -1,0 +1,5 @@
+{
+    "event": "Unauthorized Process",
+    "severity": "High",
+    "process": "unauthorized_cryptominer"
+}

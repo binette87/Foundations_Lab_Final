@@ -1,0 +1,17 @@
+services:
+  frontend:
+    image: nginx
+    ports:
+      - "8080:80"
+    networks:
+      - frontend
+
+  backend:
+    image: redis
+    networks:
+      - backend
+
+networks:
+  frontend:
+  backend:
+    internal: true
