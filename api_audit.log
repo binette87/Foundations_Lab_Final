@@ -1,0 +1,21 @@
+==================================================
+SESSION 27: API SECURITY AUDIT LOG
+==================================================
+
+1. BOLA (ID SWAP) EXPLOITATION
+* Targeted User ID: 102
+* Private Information Leaked:  {"email":"boss@titan.com","name":"CISO","role":"Admin","secret":"TITAN_MASTER_KEY_2026"}
+
+2. BUSINESS LOGIC EXPLOITATION (DISCOUNT HUNTER)
+* Hidden Discount Code Discovered: 9912
+* Method Used: Brute-forced the checkout endpoint using a bash loop sending POST requests with discount codes from 9900-9999, identified the valid code by the differing response containing "100 OFF" and
+total of $0.00
+
+3. REMEDIATION RECOMMENDATION
+* How would you fix the BOLA vulnerability?
+Answer: BOLA fix: Enforce server-side authorization checks that verify the requesting user
+owns the resource being accessed, never trust user-supplied IDs alone
+
+
+* How would you fix the Brute-Force vulnerability in the discount field?
+Answer:Implement rate limiting and account lockout on the discount code field to prevent automated guessing attacks 
