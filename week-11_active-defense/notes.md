@@ -3,6 +3,7 @@
 
 **Course:** Foundations of Cybersecurity  
 **Week:** 11 · Sessions 31, 32, 33 · TLAB-11  
+**Topics:** Firewall Configuration, UFW, iptables, DMZ Architecture, Intrusion Detection, Sysmon EDR, Defense-in-Depth
 **Topics:** Firewall Configuration, UFW, iptables, DMZ Architecture, Intrusion Detection, EDR
 
 ---
@@ -240,6 +241,60 @@ Host EDR (Sysmon — S33)
 ```
 
 Together, network IDS and host EDR provide visibility at every layer of the kill chain.
+
+---
+
+---
+
+## TLAB-11: Operation Fortress
+
+### Summary
+
+Operation Fortress was the Week 11 capstone, integrating all three active defense layers — iptables egress filtering (S31), Suricata IDS signatures (S32), and Sysmon EDR policy (S33) — into a single defense-in-depth architecture targeting a specific, threat-intelligence-confirmed adversary. The scenario provided concrete threat indicators: a C2 subnet (`198.51.100.0/24`), a web shell exploit string (`cmd=whoami`), and a post-exploitation payload download command (`curl http://198.51.100.5`). Each layer addressed one of these indicators independently, so that if any single layer failed or was bypassed, the remaining layers would still detect or block the attack (NIST, 2020).
+
+**Layer 1 — Firewall (Egress Filtering)**  
+The `firewall_task.sh` script was opened and the `[INSERT EGRESS DROP RULE HERE]` placeholder was replaced with an iptables OUTPUT DROP rule targeting the `198.51.100.0/24` C2 subnet. This rule prevents any process on the host from establishing outbound connections to the attacker's infrastructure — blocking C2 callbacks, payload downloads, and data exfiltration over that subnet regardless of which process initiates the connection.
+
+**Layer 2 — IDS Signature (Web Shell Detection)**  
+The `suricata_task.rules` file was opened and a Suricata `alert tcp` rule was written to match TCP traffic on port 80 containing the exact content string `cmd=whoami` — the web shell command injection pattern. This rule fires when an attacker attempts to use a web shell on the monitored server, generating a network-layer alert at the moment of exploitation rather than after the fact.
+
+**Layer 3 — EDR Policy (Post-Exploitation Detection)**  
+The `sysmon_task.xml` file was opened and a `<CommandLine condition="contains">curl http://198.51.100.5</CommandLine>` element was inserted into the `<ProcessCreate>` block. This rule fires when any process on the endpoint executes a command containing that specific curl invocation — catching the post-exploitation payload download at the moment of execution on the host.
+
+All three completed rules were documented in `Operation_Fortress_Report.md`, one rule per layer with its specific threat-intelligence justification.
+
+### Tools & Commands Used
+
+- `curl -sL <url> | sudo bash` — provisioned the TLAB workspace with all three template files
+- `cd ~/TLAB11` — navigated to the TLAB workspace
+- `nano firewall_task.sh` — engineered the Layer 1 iptables egress DROP rule
+- `iptables -A OUTPUT -d 198.51.100.0/24 -j DROP` — blocked all outbound traffic to the C2 subnet
+- `nano suricata_task.rules` — authored the Layer 2 Suricata web shell detection signature
+- `alert tcp any any -> any 80 (msg:"Web Shell cmd=whoami Detected"; content:"cmd=whoami"; sid:1000003; rev:1;)` — web shell content-match rule
+- `nano sysmon_task.xml` — inserted the Layer 3 Sysmon process creation detection condition
+- `<CommandLine condition="contains">curl http://198.51.100.5</CommandLine>` — post-exploitation payload download detection rule
+- `cat ~/TLAB11/Operation_Fortress_Report.md` — verified the completed three-layer report
+- `git add`, `git commit`, `git push` — committed the artifact to the GitHub portfolio
+
+### Artifact
+
+`Operation_Fortress_Report.md` — A three-layer defense-in-depth report documenting the complete Operation Fortress architecture: iptables C2 egress block (Layer 1), Suricata web shell IDS signature (Layer 2), and Sysmon post-exploitation download EDR policy (Layer 3) — each layer independently targeting a confirmed threat-intelligence indicator.
+
+---
+
+## Defense-in-Depth Summary (Week 11)
+
+```
+Adversary action               → Defensive layer that catches it
+──────────────────────────────────────────────────────────────────
+C2 callback / payload download → Layer 1: iptables OUTPUT DROP (198.51.100.0/24)
+Web shell exploitation         → Layer 2: Suricata content match (cmd=whoami on :80)
+Post-exploit tool execution    → Layer 3: Sysmon CommandLine (curl http://198.51.100.5)
+
+If Layer 1 fails (firewall bypassed)  → Layer 2 still alerts on network
+If Layer 2 fails (traffic encrypted)  → Layer 3 still catches host execution
+If Layer 3 fails (Sysmon not running) → Layer 1 still blocks the callback
+```
 
 ---
 
