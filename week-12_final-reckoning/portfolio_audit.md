@@ -1,6 +1,6 @@
 # Phase 1 Portfolio Audit
 
-**Fellow:** Bineta Zakaria  
+**Fellow:** Bineta Fall  
 **Date:** May 31, 2026  
 **Repository:** https://github.com/binetazak/Foundations_Lab_Final  
 **TKH Innovation Fellowship 2026 | Phase 1 | Cybersecurity**
