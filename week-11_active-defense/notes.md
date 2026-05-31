@@ -2,7 +2,7 @@
 ## Session Notes
 
 **Course:** Foundations of Cybersecurity  
-**Week:** 11 · Session 31 · TLAB-11  
+**Week:** 11 · Sessions 31, 32 · TLAB-11  
 **Topics:** Firewall Configuration, UFW, iptables, DMZ Architecture, Intrusion Detection, EDR
 
 ---
@@ -87,6 +87,73 @@ Internal Subnet (10.0.5.0/24)
 
 **`-m multiport --dports 80,443`**  
 The `multiport` iptables extension allows matching multiple ports in a single rule rather than writing a separate rule for each port. `--dports 80,443` matches destination port 80 OR 443, equivalent to two separate `-p tcp --dport` rules combined.
+
+---
+
+---
+
+## Session 32: The Tripwire
+
+### Summary
+
+This session introduced Intrusion Detection Systems (IDS) through hands-on Suricata rule authoring and signature verification. Where firewalls (S31) block traffic based on port and protocol, an IDS inspects the content of traffic and fires alerts when patterns match known threat signatures. The two technologies are complementary: firewalls reduce the attack surface; IDS monitors what gets through and raises alerts when suspicious behavior is detected. Suricata is a high-performance, open-source IDS/IPS engine that can process network traffic at line rate and apply custom rules to any layer of the network stack (NIST, 2020).
+
+The lab was structured as a write-deploy-trigger-verify cycle for each rule — the standard workflow for validating that a signature correctly detects its intended threat and does not produce false positives.
+
+**Phase 1 — ICMP Detection (Network Layer)**  
+The first rule detected ICMP ping activity directed at the web server at `172.90.0.10`. The rule `alert icmp any any -> 172.90.0.10 any` matched any ICMP packet from any source to the target IP on any ICMP type. The `msg` field provided the human-readable alert description, `sid` assigned a unique rule identifier, and `rev` tracked the rule version. Suricata was deployed as a Docker container with the custom rules file and log directory mounted as volumes, and instructed to listen on the `ids_net` Docker network interface. A single ping confirmed the rule fired; `cat ~/IDS_Lab/logs/fast.log` showed the alert entry.
+
+**Phase 2 — Application-Layer Malware Signature**  
+The second rule demonstrated content-based detection at Layer 7. The rule `alert tcp any any -> 172.90.0.10 80 (content:"Ghost_Scanner_v1"; ...)` matched TCP traffic to port 80 containing the exact string `Ghost_Scanner_v1` — a hardcoded User-Agent string used by a simulated threat actor's scanner. The attack was simulated with `curl -A "Ghost_Scanner_v1" http://172.90.0.10`, which sent an HTTP request with that string in the User-Agent header. Suricata matched the content string in the TCP payload and fired the alert. The Suricata container was restarted between rule updates to reload the rule file.
+
+### Tools & Commands Used
+
+- `curl -sL <url> | sudo bash` — provisioned the IDS staging directory, target web server, and rule template
+- `nano ~/IDS_Lab/custom_ids.rules` — authored the Suricata detection rules
+- `alert icmp any any -> 172.90.0.10 any (msg:"ICMP Ping Detected"; sid:1000001; rev:1;)` — Rule 1: ICMP ping detection
+- `alert tcp any any -> 172.90.0.10 80 (msg:"Ghost_Bear Malware Scanner Detected"; content:"Ghost_Scanner_v1"; sid:1000002; rev:1;)` — Rule 2: malware User-Agent content match
+- `docker run -d --name ids_sensor --net ids_net -v [rules]:/etc/suricata/custom.rules -v [logs]:/var/log/suricata jasonish/suricata:latest -S /etc/suricata/custom.rules -i eth0` — deployed Suricata with custom rules mounted
+- `ping -c 1 172.90.0.10` — triggered the ICMP rule
+- `cat ~/IDS_Lab/logs/fast.log` — verified the alert fired after each test
+- `docker restart ids_sensor` — reloaded the Suricata container to ingest updated rules
+- `curl -A "Ghost_Scanner_v1" http://172.90.0.10` — simulated the malware scanner with a spoofed User-Agent
+- `git add`, `git commit`, `git push` — committed the artifact to the GitHub portfolio
+
+### Artifact
+
+`custom_ids.rules` — A Suricata IDS rule file containing two custom signatures: an ICMP ping detection rule targeting the protected web server, and a TCP content-match rule detecting the `Ghost_Scanner_v1` malware User-Agent string on port 80.
+
+---
+
+## Key Concepts
+
+**Suricata Rule Anatomy**
+
+```
+alert tcp any any -> 172.90.0.10 80 (msg:"Description"; content:"string"; sid:1000002; rev:1;)
+│     │   │   │    │  │           │   │                  │                   │          │
+│     │   │   │    │  │           │   msg: alert label   content: payload    sid: rule  rev: version
+│     │   │   │    │  │           └── destination port
+│     │   │   │    └─ destination IP
+│     │   └───┴────── source IP : source port (any = all)
+│     └── protocol (tcp, udp, icmp, http, dns, etc.)
+└── action (alert, drop, pass, reject)
+```
+
+**IDS vs. IPS**
+
+| Mode | Action on match | Effect |
+|---|---|---|
+| IDS (Detection) | Generate alert, log event | Traffic passes — analyst is notified |
+| IPS (Prevention) | Drop packet + alert | Traffic is blocked in real time |
+
+Suricata supports both modes. In IDS mode (`-S` flag with `alert` rules) it monitors passively. In IPS mode (inline with `drop` rules) it actively blocks matched traffic.
+
+**`content` Keyword — Application-Layer Matching**  
+The `content` keyword tells Suricata to search the packet payload for an exact byte sequence. This is how signature-based IDS detects known malware: attackers often hardcode strings in their tools (User-Agent headers, command strings, protocol keywords) that can be matched reliably. The limitation is that content matching is bypassable by encoding or obfuscating the target string — which is why modern IDS also uses behavioral analysis and anomaly detection alongside signature rules.
+
+**SID Namespace Convention**  
+Suricata rule SIDs are divided into ranges by origin: SIDs 1–999,999 are reserved for official rulesets (ET Open, Snort VRT). Custom local rules should use SIDs ≥ 1,000,000 to avoid conflicts with official rule updates. The lab used `sid:1000001` and `sid:1000002` following this convention.
 
 ---
 
