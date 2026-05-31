@@ -3,6 +3,7 @@
 
 **Course:** Foundations of Cybersecurity  
 **Week:** 4 · Sessions 10, 11, 12 · TLAB-04  
+**Topics:** Virtualization & Hypervisors, Containerization, Docker Compose, Network Segmentation, Hybrid Architecture Auditing
 **Topics:** Virtualization & Hypervisors, Forensic Sandbox Configuration, VM Network Isolation
 
 ---
@@ -169,6 +170,51 @@ Even if an attacker gains remote code execution on the WordPress container, they
 
 **YAML Indentation**  
 Docker Compose files are strict about indentation — two spaces per level, no tabs. A misaligned `networks:` block under a service will either throw a parse error or silently assign the service to the wrong network, breaking isolation without any obvious error message.
+
+---
+
+---
+
+## TLAB-04: Operation Fortified Node
+
+### Summary
+
+Operation Fortified Node was an independent capstone lab synthesizing virtualization (S10), single-container operations (S11), and Docker Compose network segmentation (S12) into a hardened hybrid architecture — one combining a containerized application stack with an isolated VM sandbox. The scenario required five sequential phases: environment cleanup, stack orchestration, security verification, JSON audit reporting, and GitHub submission.
+
+Phase 0 established the VM-layer air gap. Using VirtualBox's Network Manager, the Session 10 Ubuntu VM's adapter was confirmed as Host-Only, placing it on the `vboxnet0` network (`192.168.56.x` range) — reachable by the host machine but isolated from the internet and from Docker container networks. The VM's IP was recorded via `ip addr` for use in the Phase 3 isolation test.
+
+Phase 1 addressed a pre-existing environment conflict: a container named `decoy_web` was already occupying port 80. `docker ps` identified the squatter, `curl localhost:80` confirmed it was actively serving traffic, and `docker stop` followed by `docker rm` evicted it. `docker ps -a` verified clean removal before the new stack was deployed.
+
+Phase 2 was the capstone's core engineering task — writing a `docker-compose.yml` from scratch with no skeleton or template. The file defined a three-tier architecture: a `db` service running MariaDB with a named volume (`db_data`) for persistence, assigned only to `private_net`; and a `web` service running WordPress with port 80 mapped to the host, assigned to both `public_net` and `private_net`. The `private_net` network was marked `internal: true`, air-gapping the database from the internet. This structure directly applied the segmentation pattern from S12.
+
+Phase 3 performed empirical security verification. `nmap -p 80,3306 localhost` confirmed port 80 was open (WordPress accessible) and port 3306 was closed or filtered (MariaDB not exposed to the host). The critical isolation test entered the WordPress container via `docker exec` and attempted to ping the Host-Only VM IP recorded in Phase 0. The ping failed — confirming that Docker's `internal` network creates a routing boundary that prevents containers from reaching the hypervisor's host-only adapter network even though the host itself can reach both. This result was documented as `PASSED`.
+
+Phase 4 produced the machine-readable audit artifact `hyperstack_audit.json`, a structured JSON report capturing the operator's initials, the host and VM sandbox IPs, the web container's short ID, the isolation test result, and volume persistence status. This format mirrors real-world SIEM and compliance reporting pipelines where findings must be machine-parseable for automated ingestion (NIST, 2020).
+
+### Tools & Commands Used
+
+- **VirtualBox Network Manager** — verified Host-Only adapter (`vboxnet0`) configuration and DHCP status
+- `ip addr` — identified the VM's Host-Only network IP address (`192.168.56.x`)
+- `docker ps` — identified the squatter container (`decoy_web`) and later retrieved the web container name/ID
+- `curl localhost:80` — confirmed the squatter was actively serving traffic on port 80
+- `docker stop decoy_web` / `docker rm decoy_web` — evicted the conflicting container
+- `docker ps -a` — verified complete removal of the squatter
+- `cd ~/hyper_stack` — navigated to the TLAB working directory
+- `nano docker-compose.yml` — authored the three-tier Compose configuration from scratch
+- `docker compose up -d` — launched the full WordPress + MariaDB stack
+- `sudo apt-get install -y nmap` — installed the port scanner (if not present)
+- `nmap -p 80,3306 localhost` — audited exposed ports to verify the database was not publicly reachable
+- `docker exec -it [web-container-name] sh` — entered the WordPress container for isolation testing
+- `ping [VM-IP]` — attempted to reach the Host-Only VM from inside the container; failure confirmed isolation
+- `nano hyperstack_audit.json` — authored the machine-readable audit report
+- `cat ~/hyper_stack/hyperstack_audit.json` — verified the artifact before submission
+- `git add`, `git commit`, `git push` — committed both artifacts to the GitHub portfolio
+
+### Artifacts
+
+`docker-compose.yml` — A Docker Compose file defining a three-tier WordPress + MariaDB stack with two custom networks (`public_net` and `internal: true` `private_net`), a named persistence volume (`db_data`), and port mapping for the web tier only.
+
+`hyperstack_audit.json` — A machine-readable JSON audit report documenting the operator, host and VM IPs, web container ID, isolation test result, and volume persistence verification.
 
 ---
 
