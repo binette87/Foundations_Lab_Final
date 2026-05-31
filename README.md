@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=700&lines=Foundations+of+Cybersecurity;12-Week+Hands-On+Portfolio;Linux+%7C+Python+%7C+Docker+%7C+Forensics" alt="Typing SVG" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=700&lines=Foundations+of+Cybersecurity;Hands-On+Security+Portfolio;Linux+%7C+Python+%7C+Docker+%7C+Forensics" alt="Typing SVG" />
 
 <br/>
 
-**A 12-week hands-on cybersecurity program covering Linux, networking, Python, cloud infrastructure, offensive security, and digital forensics.**
+**A hands-on cybersecurity program covering Linux, networking, Python, cloud infrastructure, offensive security, and digital forensics.**
 
 <br/>
 
