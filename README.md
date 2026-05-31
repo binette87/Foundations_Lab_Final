@@ -1,15 +1,27 @@
 <div align="center">
 
-# 🛡️ Foundations of Cybersecurity — Portfolio
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=00D4FF&center=true&vCenter=true&width=700&lines=Foundations+of+Cybersecurity;12-Week+Hands-On+Portfolio;Linux+%7C+Python+%7C+Docker+%7C+Forensics" alt="Typing SVG" />
+
+<br/>
 
 **A 12-week hands-on cybersecurity program covering Linux, networking, Python, cloud infrastructure, offensive security, and digital forensics.**
 
-![Linux](https://img.shields.io/badge/Linux-Ubuntu-orange?logo=ubuntu&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
-![Nmap](https://img.shields.io/badge/Nmap-Network%20Scanning-brightgreen)
-![Wireshark](https://img.shields.io/badge/Wireshark-Protocol%20Analysis-1679A7?logo=wireshark&logoColor=white)
-![Active Directory](https://img.shields.io/badge/Active%20Directory-Windows%20Server-0078D4?logo=windows&logoColor=white)
+<br/>
+
+![Linux](https://img.shields.io/badge/Linux-Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.x-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![PowerShell](https://img.shields.io/badge/PowerShell-Automation-5391FE?style=for-the-badge&logo=powershell&logoColor=white)
+![Bash](https://img.shields.io/badge/Bash-Scripting-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white)
+![Wireshark](https://img.shields.io/badge/Wireshark-Protocol%20Analysis-1679A7?style=for-the-badge&logo=wireshark&logoColor=white)
+![Nmap](https://img.shields.io/badge/Nmap-Reconnaissance-00D4FF?style=for-the-badge)
+![Active Directory](https://img.shields.io/badge/Active%20Directory-Windows%20Server-0078D4?style=for-the-badge&logo=windows&logoColor=white)
+
+<br/>
+
+![Weeks](https://img.shields.io/badge/Duration-12%20Weeks-blueviolet?style=flat-square)
+![Sessions](https://img.shields.io/badge/Sessions-36-success?style=flat-square)
+![Artifacts](https://img.shields.io/badge/Artifacts-Committed%20Weekly-orange?style=flat-square)
 
 </div>
 
@@ -24,7 +36,7 @@
 
 ---
 
-## About
+## 🔎 About
 
 This repository contains all lab artifacts, scripts, reports, and architecture documents produced across a 12-week cybersecurity foundations program. Each week builds on the last — from Linux fundamentals and network analysis through exploitation, forensics, and incident response.
 
@@ -32,25 +44,26 @@ Every artifact was built hands-on in a live lab environment and committed direct
 
 ---
 
-## Skills Demonstrated
+## ⚙️ Skills Demonstrated
 
 | Domain | Tools & Technologies |
 |---|---|
-| **Operating Systems** | Ubuntu Linux, Windows Server 2022, Server Core |
-| **Scripting & Automation** | Python 3, Bash, PowerShell |
-| **Networking** | TCP/IP, DNS, Wireshark, Nmap, Suricata, UFW |
-| **Virtualization & Containers** | VirtualBox, UTM, Docker, Docker Compose |
-| **Identity & Access** | Active Directory, Group Policy, SSSD, Kerberos |
-| **Offensive Security** | Metasploit, SQL Injection, XSS, Reconnaissance |
-| **Digital Forensics** | Volatility, Autopsy, chain-of-custody documentation |
-| **Incident Response** | Attack timelines, SIEM alerting, escalation procedures |
+| 🐧 **Operating Systems** | Ubuntu Linux, Windows Server 2022, Server Core |
+| 🐍 **Scripting & Automation** | Python 3, Bash, PowerShell |
+| 🌐 **Networking** | TCP/IP, DNS, Wireshark, Nmap, Suricata, UFW |
+| 🐳 **Virtualization & Containers** | VirtualBox, UTM, Docker, Docker Compose |
+| 🔐 **Identity & Access** | Active Directory, Group Policy, SSSD, Kerberos |
+| ⚔️ **Offensive Security** | Metasploit, SQL Injection, XSS, Reconnaissance |
+| 🔬 **Digital Forensics** | Volatility, Autopsy, chain-of-custody documentation |
+| 🚨 **Incident Response** | Attack timelines, SIEM alerting, escalation procedures |
 
 ---
 
-## Weekly Modules
+## 📁 Weekly Modules
 
-### Week 1 — Linux Fundamentals
-> Sessions 1–3 · Filesystem navigation, file permission hardening, stream editing & log parsing
+<details>
+<summary><b>🟢 Week 1 — Linux Fundamentals</b> &nbsp;|&nbsp; Sessions 1–3 &nbsp;·&nbsp; Filesystem navigation, permission hardening, stream editing</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -59,10 +72,13 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `setup_verify.txt` | Environment setup verification |
 | `notes.md` | Session notes covering all Week 1 concepts |
 
+</details>
+
 ---
 
-### Week 2 — Networking & Protocol Analysis
-> Sessions 4–6 · OSI model, IP subnetting, DNS & protocol interrogation
+<details>
+<summary><b>🟢 Week 2 — Networking & Protocol Analysis</b> &nbsp;|&nbsp; Sessions 4–6 &nbsp;·&nbsp; OSI model, IP subnetting, DNS & protocol interrogation</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -71,10 +87,13 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `protocol_audit.txt` | S06: DNS & protocol interrogation |
 | `notes.md` | Session notes covering all Week 2 concepts |
 
+</details>
+
 ---
 
-### Week 3 — Python for Security
-> Sessions 7–9 · Network scanning, log analysis, brute-force detection, process auditing
+<details>
+<summary><b>🟢 Week 3 — Python for Security</b> &nbsp;|&nbsp; Sessions 7–9 &nbsp;·&nbsp; Network scanning, log analysis, brute-force detection, process auditing</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -86,10 +105,13 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `threat_report.json` | TLAB-03: JSON threat report with attacker IPs |
 | `notes.md` | Session notes covering all Week 3 concepts |
 
+</details>
+
 ---
 
-### Week 4 — Virtualization, Containers & Docker
-> Sessions 10–12 · VM isolation, Docker operations, Docker Compose network segmentation
+<details>
+<summary><b>🟢 Week 4 — Virtualization, Containers & Docker</b> &nbsp;|&nbsp; Sessions 10–12 &nbsp;·&nbsp; VM isolation, Docker operations, Compose network segmentation</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -98,10 +120,13 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `docker-compose.yml` | S12 / TLAB-04: Air-gapped multi-container stack |
 | `notes.md` | Session notes covering all Week 4 concepts |
 
+</details>
+
 ---
 
-### Week 5 — Identity, Access & Active Directory
-> Sessions 13–15 · Domain controller setup, PowerShell user provisioning, Group Policy, Linux-AD integration
+<details>
+<summary><b>🟡 Week 5 — Identity, Access & Active Directory</b> &nbsp;|&nbsp; Sessions 13–15 &nbsp;·&nbsp; Domain controller, PowerShell provisioning, Group Policy, Linux-AD integration</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -110,12 +135,15 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `unified_identity.png` | S15: Screenshot proving Windows domain admin → Linux root |
 | `notes.md` | Session notes covering all Week 5 concepts |
 
-> ⚠️ Week 5 lab artifacts reside on the Windows Server VM and will be pushed in a future commit.
+> ⚠️ Lab artifacts reside on the Windows Server VM and will be pushed in a future commit.
+
+</details>
 
 ---
 
-### Week 6 — Midterm Capstone
-> Sessions 16–18 · OSI troubleshooting, forensic exam, solo enterprise deployment
+<details>
+<summary><b>🟢 Week 6 — Midterm Capstone</b> &nbsp;|&nbsp; Sessions 16–18 &nbsp;·&nbsp; OSI troubleshooting, forensic exam, solo enterprise deployment</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -124,10 +152,13 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `HardenedOutpost_SAD.pdf` | S18: Capstone Security Architecture Document (SAD) |
 | `notes.md` | Session notes covering all Week 6 concepts |
 
+</details>
+
 ---
 
-### Week 7 — Reconnaissance & Vulnerability Analysis
-> Sessions 19–21 · Passive OSINT, active Nmap scanning, CVE research & CVSS triage
+<details>
+<summary><b>🟢 Week 7 — Reconnaissance & Vulnerability Analysis</b> &nbsp;|&nbsp; Sessions 19–21 &nbsp;·&nbsp; Passive OSINT, active Nmap scanning, CVE research & CVSS triage</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -137,10 +168,13 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `Perimeter_Assessment.md` | Perimeter security assessment |
 | `notes.md` | Session notes covering all Week 7 concepts |
 
+</details>
+
 ---
 
-### Weeks 8–9 — Exploitation & Post-Exploitation
-> Sessions 22–27 · Metasploit, web application attacks, SQL injection, XSS, pivoting
+<details>
+<summary><b>🟢 Weeks 8–9 — Exploitation & Post-Exploitation</b> &nbsp;|&nbsp; Sessions 22–27 &nbsp;·&nbsp; Metasploit, web app attacks, SQL injection, XSS, pivoting</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -152,10 +186,13 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `backup_discovery.txt` | Backup discovery findings |
 | `notes.md` | Session notes covering all Weeks 8–9 concepts |
 
+</details>
+
 ---
 
-### Week 10 — Digital Forensics & Incident Response (DFIR)
-> Sessions 28–30 · Live triage, disk forensics, memory forensics, chain of custody
+<details>
+<summary><b>🟢 Week 10 — Digital Forensics & Incident Response (DFIR)</b> &nbsp;|&nbsp; Sessions 28–30 &nbsp;·&nbsp; Live triage, disk & memory forensics, chain of custody</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -166,10 +203,13 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `forensic_report.pdf` | Full forensic analysis report |
 | `notes.md` | Session notes covering all Week 10 concepts |
 
+</details>
+
 ---
 
-### Week 11 — Active Defense
-> Sessions 31–33 · Firewall hardening, intrusion detection (Suricata), endpoint detection & response
+<details>
+<summary><b>🟢 Week 11 — Active Defense</b> &nbsp;|&nbsp; Sessions 31–33 &nbsp;·&nbsp; Firewall hardening, intrusion detection (Suricata), EDR</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -179,10 +219,13 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `threat_ips.txt` | Threat IP blocklist |
 | `notes.md` | Session notes covering all Week 11 concepts |
 
+</details>
+
 ---
 
-### Week 12 — The Final Reckoning
-> Sessions 34–36 · Threat assessment, purple team operations, incident response
+<details>
+<summary><b>🟢 Week 12 — The Final Reckoning</b> &nbsp;|&nbsp; Sessions 34–36 &nbsp;·&nbsp; Threat assessment, purple team ops, incident response</summary>
+<br/>
 
 | Artifact | Description |
 |---|---|
@@ -193,9 +236,11 @@ Every artifact was built hands-on in a live lab environment and committed direct
 | `tepp_postmortem.md` | Post-mortem analysis |
 | `notes.md` | Session notes covering all Week 12 concepts |
 
+</details>
+
 ---
 
-## Repository Structure
+## 🗂️ Repository Structure
 
 ```
 Foundations_Lab_Final/
@@ -216,6 +261,8 @@ Foundations_Lab_Final/
 ---
 
 <div align="center">
+
+![Wave](https://capsule-render.vercel.app/api?type=waving&color=0:00D4FF,100:0078D4&height=100&section=footer)
 
 *Built session by session. Committed line by line.*
 
