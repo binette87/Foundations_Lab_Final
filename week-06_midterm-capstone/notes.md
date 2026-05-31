@@ -2,7 +2,7 @@
 ## Session Notes
 
 **Course:** Foundations of Cybersecurity  
-**Week:** 6 · Session 16 · TLAB-06  
+**Week:** 6 · Sessions 16, 17 · TLAB-06  
 **Topics:** OSI Model Troubleshooting, File Permissions, Docker Port Conflicts, Firewall Rules
 
 ---
@@ -82,6 +82,68 @@ The sabotage set permissions to `000` (`----------`), removing all access for al
 
 **`ufw` Rule Numbering**  
 `sudo ufw status numbered` displays rules with index numbers, enabling safe targeted deletion with `sudo ufw delete [n]`. Deleting by rule number avoids accidental removal of the wrong rule when multiple similar rules exist. Always run `status numbered` and identify the exact rule before deleting.
+
+---
+
+---
+
+## Session 17: The Forge Final
+
+### Summary
+
+Session 17 was the midterm capstone practical exam, consisting of two phases: a theoretical diagnostic (Part A, administered through Canvas) and a hands-on practical diagnostic (Part B, conducted on the Ubuntu VM). The practical phase simulated a realistic SOC task: locating sensitive root-owned log files scattered across the filesystem, extracting them to a controlled submission directory, and locking them down to read-only before documenting every command used in a structured exam report.
+
+Part B began with a filesystem hunt using the `find` command — one of the most powerful forensic and administrative tools in Linux. The command searched the entire root filesystem (`/`) for files matching two criteria: owned by `root` (`-user root`) and having a `.log` extension (`-name "*.log"`). Standard error was redirected to `/dev/null` using `2>/dev/null` to suppress permission-denied messages from protected directories, keeping the output clean and readable. This technique is standard practice during forensic searches where the analyst needs results without noise from inaccessible paths.
+
+The located files — `forge_alpha.log` and `forge_beta.log` — were moved into `~/Exam_Submission/` using `sudo mv`. The `sudo` requirement enforced the principle that root-owned files cannot be manipulated by a regular user without explicit privilege escalation — a deliberate constraint demonstrating awareness of Linux ownership and privilege boundaries.
+
+Permissions were then changed to `444` using `sudo chmod 444`, setting the files to read-only for owner, group, and other — removing all write and execute permissions across the board. This lockdown step simulates evidence preservation: once forensic artifacts are collected, they must be write-protected to maintain chain of custody and prevent accidental or intentional modification (NIST, 2020).
+
+All commands used across the three steps were documented verbatim in `practical_exam_report.txt`, which served as both the submission artifact and a chain-of-custody record — a format directly analogous to real-world incident response documentation where exact commands must be reproducible and auditable.
+
+### Tools & Commands Used
+
+- `curl -sL <url> | sudo bash` — ran the exam provisioning script to create `~/Exam_Submission/` and seed the environment
+- `find / -user root -name "*.log" 2>/dev/null` — searched the entire filesystem for root-owned `.log` files while suppressing permission errors
+- `sudo mv forge_alpha.log forge_beta.log ~/Exam_Submission/` — moved the discovered log files into the submission directory using elevated privileges
+- `sudo chmod 444 ~/Exam_Submission/forge_alpha.log ~/Exam_Submission/forge_beta.log` — set both files to read-only for all users
+- `cat ~/practical_exam_report.txt` — verified the completed report before submission
+- `git add`, `git commit`, `git push` — committed the artifact to the GitHub portfolio
+
+### Artifact
+
+`practical_exam_report.txt` — The midterm practical exam report documenting the exact commands used to locate root-owned log files across the filesystem, extract them to the submission directory, and lock them to read-only — serving as both an exam submission and a chain-of-custody record.
+
+---
+
+## Key Concepts
+
+**`find` — Filesystem Search Syntax**
+
+```bash
+find [start_path] [criteria] [action]
+
+# S17 command:
+find / -user root -name "*.log" 2>/dev/null
+```
+
+Common criteria flags: `-user` (file owner), `-name` (filename pattern, case-sensitive), `-iname` (case-insensitive), `-type f` (files only), `-type d` (directories only), `-perm` (permission bits), `-mtime` (modified within N days). Combining criteria with `-and` / `-or` enables complex forensic queries.
+
+**`2>/dev/null` — Silencing Permission Errors**  
+File descriptor `2` is standard error (stderr). Redirecting it to `/dev/null` (the system's discard device) suppresses error messages without affecting standard output (fd `1`). During a filesystem-wide `find`, hundreds of `Permission denied` messages would otherwise drown out the actual results. This redirection is a standard forensic search technique, not a workaround.
+
+**`chmod 444` — Read-Only for All**
+
+```
+4 = r--  (owner: read only)
+4 = r--  (group: read only)
+4 = r--  (other: read only)
+```
+
+Setting evidence files to `444` immediately after collection prevents any user — including the analyst — from accidentally modifying the artifact. Combined with a cryptographic hash (`sha256sum`) taken at collection time, this establishes the integrity baseline required for chain of custody in a formal investigation.
+
+**Why `sudo mv` for Root-Owned Files**  
+A file owned by `root` can only be moved or deleted by `root` (or a user with sudo). A regular user attempting `mv` on a root-owned file in a protected directory will receive `Permission denied` regardless of the destination. This is a deliberate Linux security boundary: ownership controls who can manipulate a file, not just who can read it.
 
 ---
 
