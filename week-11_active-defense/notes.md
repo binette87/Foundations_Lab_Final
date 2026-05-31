@@ -2,7 +2,7 @@
 ## Session Notes
 
 **Course:** Foundations of Cybersecurity  
-**Week:** 11 · Sessions 31, 32 · TLAB-11  
+**Week:** 11 · Sessions 31, 32, 33 · TLAB-11  
 **Topics:** Firewall Configuration, UFW, iptables, DMZ Architecture, Intrusion Detection, EDR
 
 ---
@@ -154,6 +154,92 @@ The `content` keyword tells Suricata to search the packet payload for an exact b
 
 **SID Namespace Convention**  
 Suricata rule SIDs are divided into ranges by origin: SIDs 1–999,999 are reserved for official rulesets (ET Open, Snort VRT). Custom local rules should use SIDs ≥ 1,000,000 to avoid conflicts with official rule updates. The lab used `sid:1000001` and `sid:1000002` following this convention.
+
+---
+
+---
+
+## Session 33: The Last Mile
+
+### Summary
+
+This session introduced Endpoint Detection and Response (EDR) through Sysmon — Microsoft's free endpoint monitoring tool — and XML-based detection policy authoring. Where IDS (S32) monitors network traffic, EDR monitors what happens on the host itself: which processes are created, which files are accessed, which commands are executed. This distinction is critical for detecting threats that operate entirely within a single machine, such as ransomware precursor behavior, living-off-the-land attacks, and obfuscated scripts (NIST, 2020).
+
+**Phase 1 — Sysmon Process Monitoring**  
+Sysmon was initialized on the Ubuntu VM using SysmonForLinux (`sudo sysmon -accepteula -i`), which begins logging all process creation events to the system log at `/var/log/syslog`. Event ID 1 (Process Creation) is Sysmon's most important event type — it records the full command line, parent process, and user context for every process that starts on the endpoint.
+
+A simulated suspicious script (`invoice_macro.ps1`) was executed via PowerShell Core (`pwsh`). The script claimed to download an invoice, but Sysmon's Event ID 1 logs revealed its actual behavior: `pwsh` spawned a child process whose command line contained `vssadmin delete shadows /all /quiet`. This command — deleting Volume Shadow Copies — is the canonical ransomware precursor step. Shadow copies are Windows' built-in backup mechanism; ransomware deletes them immediately before beginning encryption to prevent victims from recovering files without paying the ransom. Detecting this command is therefore a high-confidence indicator of an imminent ransomware encryption event.
+
+**Phase 2 — EDR Detection Policy Deployment**  
+The `edr_policy.xml` template was opened and reviewed. The critical element was a `<CommandLine condition="contains">delete shadows</CommandLine>` filter inside the `<ProcessCreate>` block — an XML rule telling Sysmon to generate an alert when any process creation event contains the string `delete shadows` in its command line arguments. `sudo sysmon -c ~/edr_policy.xml` loaded the new configuration into the running Sysmon instance without restarting it. Re-running the script and filtering the syslog for `delete shadows` confirmed the custom rule fired — producing a targeted, low-noise alert for exactly the ransomware precursor behavior rather than logging every process creation indiscriminately.
+
+### Tools & Commands Used
+
+- `curl -sL <url> | tr -d '\r' | sudo bash` — installed SysmonForLinux, PowerShell Core, and the simulated ransomware environment
+- `sudo sysmon -accepteula -i` — accepted the EULA and initialized Sysmon with default configuration
+- `pwsh ~/invoice_macro.ps1` — executed the obfuscated script using PowerShell Core
+- `sudo tail -n 50 /var/log/syslog | grep -i sysmon` — inspected Sysmon Event ID 1 logs to discover the script's actual child process and command line
+- `nano ~/edr_policy.xml` — reviewed and confirmed the XML detection policy
+- `<CommandLine condition="contains">delete shadows</CommandLine>` — the targeted detection rule inside the `<ProcessCreate>` block
+- `sudo sysmon -c ~/edr_policy.xml` — loaded the custom XML policy into the running Sysmon instance
+- `pwsh ~/invoice_macro.ps1` — re-executed the script to trigger the custom rule
+- `sudo tail -n 20 /var/log/syslog | grep -i "delete shadows"` — verified the targeted alert fired
+- `cat ~/edr_policy.xml` — verified the artifact before submission
+- `git add`, `git commit`, `git push` — committed the artifact to the GitHub portfolio
+
+### Artifact
+
+`edr_policy.xml` — A Sysmon XML detection policy containing a `ProcessCreate` rule that fires a targeted alert when any process command line contains the string `delete shadows` — detecting the canonical ransomware shadow copy deletion precursor before encryption begins.
+
+---
+
+## Key Concepts
+
+**Sysmon Event ID Reference**
+
+| Event ID | Event Type | What it captures |
+|---|---|---|
+| 1 | Process Creation | Command line, parent PID, user, hashes |
+| 3 | Network Connection | Outbound TCP/UDP connections from processes |
+| 7 | Image Loaded | DLLs loaded by processes |
+| 11 | File Created | New files written to disk |
+| 13 | Registry Value Set | Registry modifications |
+| 22 | DNS Query | Domain name lookups by processes |
+
+Event ID 1 is the highest-value event for malware detection because it captures the full command line — including any arguments — for every process that starts on the endpoint.
+
+**Sysmon XML Policy Structure**
+
+```xml
+<Sysmon schemaversion="4.22">
+  <EventFiltering>
+    <RuleGroup name="" groupRelation="or">
+      <ProcessCreate onmatch="include">
+        <CommandLine condition="contains">delete shadows</CommandLine>
+      </ProcessCreate>
+    </RuleGroup>
+  </EventFiltering>
+</Sysmon>
+```
+
+`onmatch="include"` means: only log events where at least one condition matches. `onmatch="exclude"` means: log everything except matching events. The `condition` attribute supports: `contains`, `is`, `begin with`, `end with`, `image`, `less than`, `more than`.
+
+**Why Shadow Copy Deletion is a High-Confidence Indicator**  
+`vssadmin delete shadows /all /quiet` has essentially no legitimate administrative use in a corporate environment. Backup software uses the VSS API directly; administrators rarely run this command manually; and the `/quiet` flag (suppress all prompts) is a strong indicator of automated execution rather than human input. In a production SOC, a Sysmon alert on this command line would immediately trigger an automated response — isolating the endpoint from the network before encryption could begin.
+
+**Network IDS vs. Host EDR — Complementary Layers**
+
+```
+Network IDS (Suricata — S32)
+  └── Sees: traffic between hosts
+  └── Blind to: encrypted traffic, local-only activity
+
+Host EDR (Sysmon — S33)
+  └── Sees: every process, command, file, registry change on the endpoint
+  └── Blind to: network traffic that never touches the monitored host
+```
+
+Together, network IDS and host EDR provide visibility at every layer of the kill chain.
 
 ---
 
