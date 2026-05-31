@@ -2,7 +2,7 @@
 ## Session Notes
 
 **Course:** Foundations of Cybersecurity  
-**Week:** 6 · Sessions 16, 17 · TLAB-06  
+**Week:** 6 · Sessions 16, 17, 18 · TLAB-06  
 **Topics:** OSI Model Troubleshooting, File Permissions, Docker Port Conflicts, Firewall Rules
 
 ---
@@ -144,6 +144,94 @@ Setting evidence files to `444` immediately after collection prevents any user �
 
 **Why `sudo mv` for Root-Owned Files**  
 A file owned by `root` can only be moved or deleted by `root` (or a user with sudo). A regular user attempting `mv` on a root-owned file in a protected directory will receive `Permission denied` regardless of the destination. This is a deliberate Linux security boundary: ownership controls who can manipulate a file, not just who can read it.
+
+---
+
+---
+
+## Session 18: The Hardened Outpost (Phase 1 — Midterm Capstone)
+
+### Summary
+
+Session 18 was the midterm capstone, a three-hour solo deployment exercise building the complete infrastructure for Titan Small Business Services from scratch. The deliverable was a Security Architecture Document (SAD) — a professional PDF that served as both a proof-of-work record and a formal infrastructure specification. The capstone integrated every major skill from Weeks 1–6: SSH hardening, firewall configuration, Python automation, and Docker Compose network segmentation, all deployed on a single Ubuntu server and documented in a structured template.
+
+**Phase 1 — Perimeter Hardening**  
+The SSH daemon configuration at `/etc/ssh/sshd_config` was edited to disable two critical attack vectors: `PermitRootLogin no` prevents direct root login over SSH (forcing privilege escalation through a standard account), and `PasswordAuthentication no` disables password-based login entirely, requiring key-based authentication. These two settings together eliminate the vast majority of SSH brute-force attacks, which overwhelmingly target root with common passwords (NIST, 2020). UFW was configured with a default-deny policy, then explicitly opened on ports 22 (SSH) and 8080 (application). Default-deny means any port not explicitly allowed is blocked — the correct baseline for a production-facing server.
+
+**Phase 2 — The Automated Auditor**  
+`dc_auditor.py` was created to monitor the Windows Domain Controller's availability. The script used Python's `os` module to execute a `ping` command against the DC's IP address (4 packets), evaluated the return code to determine UP or DOWN status, and wrote the timestamped result to `/var/log/dc_audit.log`. This pattern — ping, evaluate, log — is the foundation of infrastructure availability monitoring and directly mirrors how enterprise monitoring agents like Nagios and Zabbix work at their core.
+
+**Phase 3 — The Containerized Stack**  
+A `docker-compose.yml` was authored defining a two-service, two-network architecture: a `wiki` service (Nginx) on the `frontend` network with port 8080 exposed to the host, and a `db` service (MySQL) isolated exclusively on the `backend` internal network. The `backend` network was marked `internal: true`, preventing the database container from routing traffic to the internet or the host. This architecture enforced the same defense-in-depth segmentation introduced in S12 — the web tier is accessible, the data tier is air-gapped.
+
+**Phase 4 — Documentation and Compilation**  
+`HardenedOutpost_SAD.md` was completed with all commands used, architectural decisions, and script snippets for each phase. `./build_pdf.sh` compiled the Markdown into the final `HardenedOutpost_SAD.pdf` artifact using a PDF generation pipeline provisioned by the initialization script.
+
+### Tools & Commands Used
+
+- `curl -sL <url> | sudo bash` — ran the capstone provisioning script to seed the SAD template and build tools
+- `sudo nano /etc/ssh/sshd_config` — edited SSH daemon configuration
+  - `PermitRootLogin no` — disabled direct root SSH login
+  - `PasswordAuthentication no` — disabled password authentication, enforcing key-only access
+- `sudo ufw default deny` — set firewall default policy to block all inbound and outbound traffic
+- `sudo ufw allow 22` — explicitly permitted SSH
+- `sudo ufw allow 8080` — explicitly permitted the application port
+- `sudo ufw enable` — activated the firewall
+- `nano dc_auditor.py` — authored the DC availability monitoring script
+- `os.system("ping -c 4 [DC_IP]")` — executed ping from within Python and captured the return code
+- `chmod +x dc_auditor.py` — made the auditor script executable
+- `nano docker-compose.yml` — authored the two-service, two-network Compose file
+- `docker-compose up -d` — deployed the containerized wiki + db stack
+- `nano ~/HardenedOutpost_SAD.md` — completed the Security Architecture Document
+- `./build_pdf.sh` — compiled the SAD Markdown into the final PDF artifact
+- `git add`, `git commit`, `git push` — committed the artifact to the GitHub portfolio
+
+### Artifacts
+
+`HardenedOutpost_SAD.pdf` — The midterm capstone Security Architecture Document, a professional PDF compiling the complete infrastructure deployment: SSH hardening configuration, UFW firewall rules, DC availability monitoring script, Docker Compose network architecture, and architectural decision rationale.
+
+---
+
+## Key Concepts
+
+**SSH Hardening — Two Critical Settings**
+
+| Setting | Value | What it prevents |
+|---|---|---|
+| `PermitRootLogin` | `no` | Direct brute-force against the most privileged account |
+| `PasswordAuthentication` | `no` | All password-based attacks; enforces key-only auth |
+
+These must be set in the correct order — verify key-based login works before disabling passwords, or risk locking yourself out.
+
+**UFW Default-Deny Architecture**
+
+```
+sudo ufw default deny incoming
+sudo ufw default deny outgoing   # optional — more restrictive
+sudo ufw allow 22
+sudo ufw allow 8080
+sudo ufw enable
+```
+
+Default-deny is the correct baseline: define what is allowed, block everything else. Default-allow (the opposite) requires enumerating every threat — an impossible task. Every unexplicitly-allowed port is an unexamined attack surface.
+
+**Python `os.system()` Return Codes**  
+`os.system()` returns the exit code of the command it runs. For `ping`: `0` = host is reachable, any non-zero = host is unreachable. Checking the return code rather than parsing the output is the robust approach — it works regardless of locale, language settings, or ping output format differences across OS versions.
+
+**Capstone Architecture Summary**
+
+```
+Internet
+   │
+[UFW: allow 22, 8080 / default deny]
+   │
+Ubuntu Server
+   ├── Port 22  → SSH (key-only, no root)
+   └── Port 8080 → Docker [frontend network]
+                        └── wiki (Nginx)
+                              └── [backend network, internal: true]
+                                    └── db (MySQL) — no internet route
+```
 
 ---
 
