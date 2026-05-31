@@ -2,7 +2,7 @@
 ## Session Notes
 
 **Course:** Foundations of Cybersecurity  
-**Week:** 4 · Sessions 10, 11 · TLAB-04  
+**Week:** 4 · Sessions 10, 11, 12 · TLAB-04  
 **Topics:** Virtualization & Hypervisors, Forensic Sandbox Configuration, VM Network Isolation
 
 ---
@@ -112,6 +112,63 @@ The `-p 8080:80` flag instructs Docker to listen on host port 8080 and forward a
 
 **Why `curl | sudo bash` is a risk pattern**  
 Piping a remote script directly to a privileged shell executes arbitrary code from the internet without inspection. In a security lab this is intentional — simulating how malware and attack toolkits are deployed. In production, this pattern should be replaced with verified, signed package installations.
+
+---
+
+---
+
+## Session 12: The Conductor and the Fleet
+
+### Summary
+
+This session introduced Docker Compose as an orchestration layer for multi-container environments, with a focus on network segmentation as a security control. Where Session 11 managed a single container manually, Compose allows an entire application stack — multiple services, networks, and volumes — to be defined in a single declarative YAML file and brought up or torn down with one command. This infrastructure-as-code approach is the foundation of modern DevSecOps: the topology of the environment is version-controlled, auditable, and reproducible (NIST, 2020).
+
+The micro-lab demonstrated the fundamentals by authoring a minimal `docker-compose.yml` inside `~/microlab/` that defined two services — an Nginx web server and a Redis database — both using standard Docker Hub images. The `docker-compose up -d` command acted as a conductor, pulling both images and starting both containers simultaneously in the background. `docker-compose ps` confirmed both services were running, and `docker-compose down` cleanly removed the containers and their associated networks — a clean destruction that `docker rm` alone would not accomplish.
+
+Phase 2 extended this into a realistic, security-hardened architecture: a WordPress stack with explicit network segmentation. The `docker-compose.yml` artifact defined two custom Docker networks: `frontend` (internet-accessible) and `backend` (marked `internal: true`, which instructs Docker to create an isolated network with no default gateway — meaning containers on it cannot route traffic to the internet). The WordPress service was assigned to both networks, allowing it to serve web traffic on the frontend while communicating with the database on the backend. The database service was assigned only to the backend network, air-gapping it entirely from the internet.
+
+The segmentation was verified empirically: `ping -c 2 google.com` succeeded inside the WordPress container (frontend access intact) and failed with `Network Unreachable` inside the database container (backend isolation confirmed). This mirrors real-world defense-in-depth architecture, where databases are placed behind internal network boundaries to prevent direct exposure even if the web tier is compromised.
+
+### Tools & Commands Used
+
+- `cd ~/microlab` — navigated into the micro-lab working directory
+- `nano docker-compose.yml` — authored the Compose configuration file
+- `docker-compose up -d` — started all services defined in the Compose file in detached mode
+- `docker-compose ps` — listed running services and their status
+- `docker-compose down` — stopped and removed all containers and networks defined in the Compose file
+- `docker-compose exec wordpress bash` — opened an interactive shell inside the running WordPress container
+- `docker-compose exec db bash` — opened an interactive shell inside the running database container
+- `ping -c 2 google.com` — tested internet connectivity from inside each container to verify network segmentation
+- `cat ~/docker-compose.yml` — verified the completed artifact before submission
+- `git add`, `git commit`, `git push` — committed the artifact to the GitHub portfolio
+
+### Artifact
+
+`docker-compose.yml` — A Docker Compose configuration file defining a segmented WordPress stack with two custom networks: a `frontend` network with internet access (WordPress) and an `internal: true` `backend` network with no internet access (database), implementing network-level defense-in-depth.
+
+---
+
+## Key Concepts
+
+**Docker Compose vs. Manual `docker run`**  
+`docker run` is imperative — you describe each action step by step. `docker-compose up` is declarative — you describe the desired end state in YAML and Compose figures out the steps. For multi-service stacks, Compose eliminates human error in startup order, port mapping, and network assignment.
+
+**`internal: true` Networks**  
+Adding `internal: true` to a Docker network definition instructs the Docker daemon to create the network without a default gateway. Containers on this network can communicate with each other but have no route to the internet or the host's external interface. This is the Docker equivalent of the Host-Only adapter mode configured in S10 — a software-defined air gap enforced at the network driver level.
+
+**Defense-in-Depth via Network Segmentation**
+
+```
+Internet → [Frontend Network] → WordPress → [Backend Network] → Database
+                                                ↑
+                                         internal: true
+                                         (no internet route)
+```
+
+Even if an attacker gains remote code execution on the WordPress container, they cannot directly reach the internet from the database container or exfiltrate data over an outbound connection (NIST, 2020).
+
+**YAML Indentation**  
+Docker Compose files are strict about indentation — two spaces per level, no tabs. A misaligned `networks:` block under a service will either throw a parse error or silently assign the service to the wrong network, breaking isolation without any obvious error message.
 
 ---
 
