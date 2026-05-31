@@ -2,7 +2,8 @@
 ## Session Notes
 
 **Course:** Foundations of Cybersecurity  
-**Week:** 10 · Sessions 28, 29 · TLAB-10  
+**Week:** 10 · Sessions 28, 29, 30 · TLAB-10  
+**Topics:** Live Triage, Chain of Custody, Cryptographic Hashing, Disk Forensics, Memory Forensics, SIEM Log Correlation
 **Topics:** Live Triage, Chain of Custody, Cryptographic Hashing, Disk Forensics, Memory Forensics
 
 ---
@@ -166,6 +167,162 @@ When a file is deleted, the operating system removes the directory entry (the fi
 | WHAT | What the malware did | Disk: recovered payload behavior |
 | WHEN | Timeline of activity | Filesystem: inode timestamps (MAC times) |
 | HOW | Infection mechanism | Payload content: scripts, commands, callbacks |
+
+---
+
+---
+
+## Session 30: The Central Nervous System
+
+### Summary
+
+This session introduced Security Information and Event Management (SIEM) as the centralized log correlation platform used in enterprise security operations. Where S28–29 focused on single-host forensics, a SIEM aggregates logs from every system in the environment — web servers, domain controllers, firewalls, endpoints — and makes them searchable in real time. The scenario required reconstructing an attacker's full kill chain across multiple disparate log sources by correlating events on IP address and timestamp — the same technique used by SOC analysts during active incident investigations (NIST, 2020).
+
+The lab deployed a local resource-optimized ELK stack (Elasticsearch, Logstash, Kibana) with pre-injected enterprise log data. Kibana served as the analyst interface at `http://localhost:5601`.
+
+**Phase 1 — Kibana Search (Initial Indicator Discovery)**  
+After configuring the `enterprise_logs*` index pattern in Stack Management, the Discover tab provided a full-text search interface over all ingested logs. Querying `event_type: "Failed Login"` filtered to authentication failure events. Expanding a log entry revealed an external `source_ip` — the attacker's originating address — which served as the thread to pull for the rest of the investigation. This is the standard starting point in a real SOC: a failed login alert fires, an analyst pivots on the source IP, and the full story unfolds from there.
+
+**Phase 2 — Timeline Reconstruction via Log Correlation**  
+The deep dive followed the attacker's IP across three distinct log sources, each revealing a different phase of the attack.
+
+*Initial Access:* Querying the external source IP in the web server logs revealed the exact timestamp and the command the attacker executed — the moment of first foothold.
+
+*Lateral Movement:* Searching for `"Domain Admin"` in the Windows Security logs showed the attacker escalating privileges and moving from the web server to an internal host. The internal IP used for lateral movement was extracted from these logs.
+
+*Exfiltration:* Querying the internal IP in the firewall logs revealed anomalous outbound traffic — an unusually large data transfer that did not match normal baseline behavior. The timestamp and data volume were recorded as the exfiltration event.
+
+All three events — with their timestamps, IP addresses, event types, and descriptions — were compiled into `attack_timeline.csv`, a structured breach timeline suitable for incident reporting, insurance claims, regulatory notification, or legal proceedings.
+
+### Tools & Commands Used
+
+- `curl -sL <url> | tr -d '\r' | sudo bash` — deployed the local ELK stack and injected enterprise log data
+- **Kibana** (`http://localhost:5601`) — primary SIEM interface
+  - **Stack Management → Index Patterns** — configured `enterprise_logs*` as the index pattern
+  - **Discover tab** — performed log searches and timeline analysis
+- `event_type: "Failed Login"` — Kibana query to find authentication failure events
+- External source IP pivot — correlated all log sources on the attacker's IP address
+- `"Domain Admin"` — Kibana search string to find privilege escalation and lateral movement events in Windows Security logs
+- Internal IP pivot — correlated firewall logs to find exfiltration traffic
+- `nano ~/attack_timeline.csv` — completed the three-phase attack timeline artifact
+- `cat ~/attack_timeline.csv` — verified the artifact before submission
+- `git add`, `git commit`, `git push` — committed the artifact to the GitHub portfolio
+
+### Artifact
+
+`attack_timeline.csv` — A structured attack timeline documenting all three phases of the reconstructed breach — Initial Access, Lateral Movement, and Exfiltration — with timestamps, source and destination IP addresses, event types, and narrative descriptions derived from correlated SIEM log queries.
+
+---
+
+## Key Concepts
+
+**The ELK Stack**
+
+| Component | Role |
+|---|---|
+| **Elasticsearch** | Distributed search and analytics engine — stores and indexes all log data |
+| **Logstash** | Log ingestion pipeline — parses, transforms, and forwards logs to Elasticsearch |
+| **Kibana** | Visualization and query interface — search, dashboards, alerting |
+
+Together, ELK functions as a SIEM: a single platform where every log source in the environment is searchable, correlatable, and visualizable.
+
+**Log Correlation — The Core SIEM Skill**  
+A single log source tells one part of the story. Correlation tells the whole story. The attack timeline reconstruction required three pivots:
+
+```
+Failed Login alert → source_ip extracted
+  ↓
+Web server logs (source_ip) → command executed, timestamp
+  ↓
+Windows Security logs ("Domain Admin") → internal_ip, lateral movement
+  ↓
+Firewall logs (internal_ip) → outbound data volume, exfiltration timestamp
+```
+
+Each pivot used data from the previous step to filter the next query — the same chain-of-evidence reasoning as physical forensics, applied to log data.
+
+**Kibana Query Syntax (KQL)**  
+Kibana Query Language (KQL) is the search syntax used in the Discover tab:
+
+```
+event_type: "Failed Login"          # exact match on field value
+source_ip: "203.0.113.45"           # filter by IP address
+message: "Domain Admin"             # full-text search in message field
+@timestamp >= "2024-01-01T00:00:00" # time range filter
+```
+
+Combining field filters with boolean operators (`AND`, `OR`, `NOT`) allows precise multi-condition queries across millions of log events.
+
+**Why SIEM Is Essential for Incident Response**  
+Without a SIEM, reconstructing a multi-host attack requires manually collecting and cross-referencing log files from each individual system — a process that takes hours or days and is prone to missing connections. A SIEM makes the same reconstruction possible in minutes because all logs share a common index, a common timestamp format, and a common query interface. Speed matters in incident response: every hour an attacker remains in the network is more time for lateral movement, data theft, and persistence installation.
+
+---
+
+---
+
+## TLAB-10: Operation Phantom Pursuit
+
+### Summary
+
+Operation Phantom Pursuit was the Week 10 capstone, chaining all three DFIR disciplines — SIEM correlation (S30), live host triage and chain of custody (S28), and disk forensics (S29) — into a single end-to-end incident response investigation. The scenario placed the analyst as Lead Incident Responder across a full breach lifecycle: from the initial SIEM alert through live triage to deleted payload recovery. The deliverable was a formal `Incident_Response_Report.md` structured across three phases, suitable for submission to legal, compliance, or executive stakeholders (NIST, 2020).
+
+**Phase 1 — SIEM Correlation**  
+Kibana was accessed at `http://localhost:5601` with the `enterprise_logs*` index pattern configured. A search for `Critical Alert` in the Discover tab surfaced the initial alert log entry. Expanding the entry revealed the `source_ip` — the attacker's originating address — which was recorded as the Phase 1 finding and served as the pivot for subsequent investigation steps.
+
+**Phase 2 — Live Triage and Chain of Custody**  
+`docker exec -it quarantined_host /bin/sh` accessed the compromised container with a minimal shell. `netstat -antp` enumerated active connections and listening sockets, identifying the suspicious process on port 4444 and its PID. After exiting the container, `sha256sum compromised_drive.dd` was computed from `~/DFIR_Evidence/` — establishing the cryptographic chain of custody fingerprint for the disk image. Both the PID and the SHA256 hash were recorded in Phase 2 of the report.
+
+**Phase 3 — Disk Autopsy**  
+`fls -r compromised_drive.dd` listed all files in the disk image recursively, including deleted entries marked with an asterisk. The deleted `beacon.exe` — the malware payload the attacker attempted to hide — was located by its inode number. `icat compromised_drive.dd [INODE]` extracted the raw file data, redirected to `recovered_payload.txt`. `cat recovered_payload.txt` revealed the payload contents, which were pasted verbatim into Phase 3 of the report as forensic evidence.
+
+### Tools & Commands Used
+
+- `curl -sL <url> | tr -d '\r' | sudo bash` — deployed ELK SIEM, triage container, and disk image
+- **Kibana** (`http://localhost:5601`) — SIEM interface for alert discovery
+  - `enterprise_logs*` index pattern
+  - `Critical Alert` search query → `source_ip` extracted
+- `docker exec -it quarantined_host /bin/sh` — accessed the live compromised container
+- `netstat -antp` — identified the C2 process and PID on port 4444
+- `exit` — cleanly exited the container
+- `cd ~/DFIR_Evidence/` — navigated to the evidence directory
+- `sha256sum compromised_drive.dd` — computed the chain of custody hash for the disk image
+- `fls -r compromised_drive.dd` — listed all files including deleted entries
+- `icat compromised_drive.dd [INODE] > recovered_payload.txt` — extracted the deleted `beacon.exe` by inode
+- `cat recovered_payload.txt` — examined the recovered malware payload
+- `nano ~/Incident_Response_Report.md` — completed the three-phase incident response report
+- `cat ~/Incident_Response_Report.md` — verified all phases before submission
+- `git add`, `git commit`, `git push` — committed the artifact to the GitHub portfolio
+
+### Artifact
+
+`Incident_Response_Report.md` — A three-phase formal incident response report covering the full breach lifecycle: SIEM alert source IP identification, live triage PID and SHA256 chain of custody hash, and deleted `beacon.exe` payload recovery and contents — structured for legal, compliance, and executive reporting.
+
+---
+
+## Full DFIR Methodology Summary (Week 10)
+
+```
+S28: Live Triage + Chain of Custody
+  └── netstat → C2 process on port 4444
+  └── md5sum / sha256sum → evidence integrity fingerprints
+
+S29: Disk & Memory Forensics
+  ├── strings + grep → hidden process in RAM
+  └── fls → deleted file inode
+      └── icat → recovered payload (Resume.exe)
+
+S30: SIEM Log Correlation
+  └── Kibana: Failed Login → source_ip
+      └── Web server logs → Initial Access
+          └── Windows Security logs → Lateral Movement
+              └── Firewall logs → Exfiltration timestamp + volume
+
+TLAB-10: Full Breach Lifecycle (all three combined)
+  └── Critical Alert → source_ip
+      └── Live triage → PID on port 4444
+          └── SHA256 chain of custody
+              └── fls → beacon.exe inode → icat → payload recovered
+```
 
 ---
 
