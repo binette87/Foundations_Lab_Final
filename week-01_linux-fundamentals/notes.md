@@ -2,7 +2,7 @@
 ## Session Notes
 
 **Course:** Foundations of Cybersecurity  
-**Week:** 1 · Sessions 1, 2, 3  
+**Week:** 1 · Sessions 1, 2, 3 · TLAB-01  
 **Topics:** Filesystem Navigation, File Permission Hardening, Stream Editing & Automation
 
 ---
@@ -71,6 +71,32 @@ Log analysis is a foundational skill in security operations, enabling analysts t
 ### Artifact
 
 `threat_ips.txt` — A deduplicated list of IP addresses identified as the source of SQL Injection attack traffic, suitable for handoff to a security team for blocking or further investigation.
+
+---
+
+## TLAB-01: Operation Clean Sweep
+
+### Summary
+
+This terminal lab served as a cumulative assessment synthesizing all three session skills — navigation, permissions, and stream editing — within a simulated incident response scenario. The scenario depicted a compromised server where the attacker had sabotaged a log file and deliberately set critical directory and file permissions to `000`, denying all access. The objective was to restore access, locate the hidden evidence, and extract forensic data using a multi-stage command pipeline.
+
+In Phase 1, the hidden evidence directory `/var/tmp/.evidence_cache` was located using `ls -la` to reveal dot-prefixed hidden entries. In Phase 2, `sudo chmod` and `sudo chown` were used to restore read and execute permissions and reassign file ownership, applying the principle of least privilege demonstrated in Session 02. In Phase 3, a pipeline combining `grep`, `sed`, `awk`, `sort`, and `uniq` was constructed to filter 5,000 lines of log data, strip a malware bot signature, and produce a clean, deduplicated list of attacker IP addresses — building directly on the stream editing workflow from Session 03. This exercise reflects the type of multi-skill, time-pressured forensic work performed by security analysts during real-world incident response engagements (NIST, 2020).
+
+### Tools & Commands Used
+
+- `ls -la` — revealed the hidden `.evidence_cache` directory inside `/var/tmp/`
+- `sudo chmod` — restored directory (`500`) and file (`400`) permissions to enable controlled access
+- `sudo chown` — transferred file ownership from `root` to the analyst's account for processing
+- `grep "CRITICAL"` — filtered the 5,000-line log to isolate critical incident entries
+- `sed` — stripped the `UserAgent: MalwareBot/1.0` signature to clean the output
+- `awk '{print $1}'` — extracted the IP address column from each filtered log line
+- `sort | uniq` — deduplicated the IP list to produce a clean attacker roster
+- Output redirection (`>`) — wrote the final report to `final_threat_report.txt`
+- `git add`, `git commit`, `git push` — committed and pushed the artifact to the GitHub portfolio
+
+### Artifact
+
+`final_threat_report.txt` — A deduplicated forensic report of attacker IP addresses extracted from a compromised server's incident log, produced under simulated incident response conditions.
 
 ---
 
